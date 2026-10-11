@@ -1,1 +1,144 @@
+=====================================================================
+HISTORIAL CRONOLÓGICO DE CONFIGURACIÓN CLI - PROYECTO INFRAESTRUCTURA
+=====================================================================
+
+---------------------------------------------------------------------
+PASO 1: CONFIGURACIÓN DE CONMUTACIÓN Y VLANs (Switch0)
+---------------------------------------------------------------------
+Switch> enable
+Switch# configure terminal
+Switch(config)# hostname Switch0
+
+Switch0(config)# vlan 10
+Switch0(config-vlan)# name Usuarios
+Switch0(config)# vlan 20
+Switch0(config-vlan)# name Administracion
+Switch0(config)# vlan 30
+Switch0(config-vlan)# name Servidores_Internos
+Switch0(config-vlan)# exit
+
+Switch0(config)# interface range fa0/1-10
+Switch0(config-if-range)# switchport mode access
+Switch0(config-if-range)# switchport access vlan 10
+
+Switch0(config)# interface range fa0/11-15
+Switch0(config-if-range)# switchport mode access
+Switch0(config-if-range)# switchport access vlan 20
+
+Switch0(config)# interface range fa0/16-20
+Switch0(config-if-range)# switchport mode access
+Switch0(config-if-range)# switchport access vlan 30
+
+Switch0(config)# interface gig0/1
+Switch0(config-if)# switchport mode trunk
+Switch0(config-if)# exit
+
+---------------------------------------------------------------------
+PASO 2: CORE DE RED, SUBINTERFACES Y GATEWAYS (Router0)
+---------------------------------------------------------------------
+Router> enable
+Router# configure terminal
+Router(config)# hostname Router0
+
+Router0(config)# interface gig0/0
+Router0(config-if)# no shutdown
+Router0(config-if)# exit
+
+Router0(config)# interface gig0/0.10
+Router0(config-subif)# encapsulation dot1Q 10
+Router0(config-subif)# ip address 192.168.10.1 255.255.255.0
+Router0(config-subif)# exit
+
+Router0(config)# interface gig0/0.20
+Router0(config-subif)# encapsulation dot1Q 20
+Router0(config-subif)# ip address 192.168.20.1 255.255.255.0
+Router0(config-subif)# exit
+
+Router0(config)# interface gig0/0.30
+Router0(config-subif)# encapsulation dot1Q 30
+Router0(config-subif)# ip address 192.168.30.1 255.255.255.0
+Router0(config-subif)# exit
+
+---------------------------------------------------------------------
+PASO 3: AUTOMATIZACIÓN DE RED (Servidor DHCP en Router0)
+---------------------------------------------------------------------
+Router0(config)# ip dhcp excluded-address 192.168.10.1
+Router0(config)# ip dhcp excluded-address 192.168.20.1
+
+Router0(config)# ip dhcp pool Usuarios
+Router0(dhcp-config)# network 192.168.10.0 255.255.255.0
+Router0(dhcp-config)# default-router 192.168.10.1
+Router0(dhcp-config)# dns-server 8.8.8.8
+Router0(dhcp-config)# exit
+
+Router0(config)# ip dhcp pool Administracion
+Router0(dhcp-config)# network 192.168.20.0 255.255.255.0
+Router0(dhcp-config)# default-router 192.168.20.1
+Router0(dhcp-config)# dns-server 8.8.8.8
+Router0(dhcp-config)# exit
+
+---------------------------------------------------------------------
+PASO 4: POLÍTICA DE AISLAMIENTO DE SERVIDORES (VLAN 30 en Router0)
+---------------------------------------------------------------------
+Router0(config)# ip access-list extended Restriccion_Servidor
+Router0(config-ext-nacl)# permit ip 192.168.30.0 0.0.0.255 192.168.0.0 0.0.255.255
+Router0(config-ext-nacl)# exit
+
+Router0(config)# interface gig0/0.30
+Router0(config-subif)# ip access-group Restriccion_Servidor in
+Router0(config-subif)# exit
+
+---------------------------------------------------------------------
+PASO 5: FILTRADO DE SEGURIDAD ASIMÉTRICO (VLAN 10 en Router0)
+---------------------------------------------------------------------
+Router0(config)# ip access-list extended Restricciones
+Router0(config-ext-nacl)# deny ip any 192.168.20.0 0.0.0.255
+Router0(config-ext-nacl)# permit ip any any
+Router0(config-ext-nacl)# exit
+
+Router0(config)# interface gig0/0.10
+Router0(config-subif)# ip access-group Restricciones out
+Router0(config-subif)# exit
+
+---------------------------------------------------------------------
+PASO 6: ENRUTAMIENTO WAN Y NAT OVERLOAD (Frontera en Router0)
+---------------------------------------------------------------------
+Router0(config)# interface gig0/1
+Router0(config-if)# ip address 200.100.1.2 255.255.255.252
+Router0(config-if)# no shutdown
+Router0(config-if)# exit
+
+Router0(config)# ip route 0.0.0.0 0.0.0.0 200.100.1.1
+
+Router0(config)# interface gig0/0.10
+Router0(config-subif)# ip nat inside
+Router0(config)# interface gig0/0.20
+Router0(config-subif)# ip nat inside
+Router0(config)# interface gig0/0.30
+Router0(config-subif)# ip nat inside
+
+Router0(config)# interface gig0/1
+Router0(config-if)# ip nat outside
+Router0(config-if)# exit
+
+Router0(config)# access-list 1 permit 192.168.0.0 0.0.255.255
+Router0(config)# ip nat inside source list 1 interface gig0/1 overload
+Router0(config)# exit
+
+---------------------------------------------------------------------
+PASO 7: SIMULACIÓN DE INFRAESTRUCTURA WAN EXTERNA (Router1 ISP)
+---------------------------------------------------------------------
+Router> enable
+Router# configure terminal
+Router1(config)# hostname Router1
+
+Router1(config)# interface gig0/0
+Router1(config-if)# ip address 200.100.1.1 255.255.255.252
+Router1(config-if)# no shutdown
+Router1(config-if)# exit
+
+Router1(config)# interface gig0/1
+Router1(config-if)# ip address 8.8.8.1 255.255.255.0
+Router1(config-if)# no shutdown
+Router1(config-if)# exit
 
