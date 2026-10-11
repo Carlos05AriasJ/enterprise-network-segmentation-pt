@@ -57,7 +57,9 @@ La topología en estrella está segmentada en tres redes locales virtuales (LANs
 ## 2. Despliegue Técnico e Implementación de Seguridad
 
 <div align="justify">
-> **Historial de Configuración CLI:** El registro secuencial de comandos ejecutados en la consola de Cisco IOS se encuentra disponible en el archivo adjunto: [codigo_comandos.txt](./codigo_comandos.txt).
+  
+  >  **Historial de Configuración CLI:** El registro secuencial de comandos ejecutados en la consola de Cisco IOS se encuentra disponible en el archivo adjunto: [codigo_comandos.txt](codigo_comandos.txt).
+
 </div>
 
 ### A. Filtro de Seguridad Interna: Control Asimétrico (ACL Outbound)
