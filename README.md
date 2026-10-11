@@ -49,6 +49,7 @@ La topología en estrella está segmentada en tres redes locales virtuales (LANs
 * **Políticas Restringidas:** La red de Usuarios (VLAN 10) tiene denegado el acceso perimetral interno hacia la red de Administración (VLAN 20). **El servidor local (Server0) carece de acceso a Internet, quedando restringido estrictamente a las comunicaciones de la red local interna.**
 
 ### Esquema Visual de la Topología
+
 ![Topología General de la Red](./img/Esquema-de-red-topográfica.png)
 
 ---
@@ -107,12 +108,15 @@ Una vez montada la red, comprobamos que el reparto automático de IPs funciona b
 </div>
 
 * **PC0 (VLAN 10 - Red de Usuarios):**
+
 ![Asignación DHCP PC0](./img/PC0-DHCP.png)
   
 * **PC1 (VLAN 10 - Red de Usuarios):**
+
 ![Asignación DHCP PC1](./img/PC1-DHCP.png)
   
 * **PC2 (VLAN 20 - Red de Administración):**
+
 ![Asignación DHCP PC2](./img/PC2-DHCP.png)
 
 ---
@@ -124,12 +128,15 @@ Una vez montada la red, comprobamos que el reparto automático de IPs funciona b
 Hicimos pruebas reales con la herramienta de ping (trazas ICMP) para confirmar que las conexiones necesarias de la oficina funcionan de forma fluida:
 
 * <b>Acceso al Servidor de la Oficina:</b> Los usuarios (VLAN 10) llegan sin problemas al servidor local (<code>Server0</code>) en la VLAN 30, confirmando que el cable troncal que une el switch con el router funciona bien.
+
 ![Ping Exitoso al Servidor Interno](./img/VLAN_10-a-VLAN_30.png)
 
 * <b>Salida a Internet:</b> Las PCs de los empleados salen a la red pública externa (<code>8.8.8.8</code>) sin problemas gracias a que el router camufla sus IPs privadas usando NAT PAT Overload.
+
 ![Ping Exitoso a Internet](./img/VLAN_10-a-Internet.png)
 
 * <b>Tareas de Soporte de IT:</b> La PC del Administrador (<code>PC2</code>) mantiene comunicación total y puede hacer ping hacia los usuarios para solucionar problemas técnicos, validando el diseño asimétrico.
+
 ![Ping de Administrador a Usuario](./img/VLAN_20-a-VLAN_10.png)
 
 </div>
@@ -147,9 +154,11 @@ Por último, forzamos pings prohibidos para comprobar que el router bloquea lo q
 <div align="justify">
 
 * <b>Muro de seguridad hacia IT:</b> Si intentamos lanzar un ping desde el usuario <code>PC0</code> hacia el Administrador (<code>192.168.20.2</code>), el router frena los paquetes antes de entregarlos y la consola avisa con un error de <i>Destination host unreachable</i>.
+
 ![Ping Bloqueado hacia Administración](./img/VLAN_10-a-VLAN_20.png)
 
 * <b>Aislamiento de Internet en el Servidor:</b> Al intentar hacer un ping desde el <code>Server0</code> hacia la IP de Internet (<code>8.8.8.8</code>), la regla <code>Restriccion_Servidor</code> detecta que el paquete quiere salir de la empresa y lo destruye en el primer salto.
+
 ![Ping Bloqueado del Servidor a Internet](./img/Servidores-a-Internet.png)
 
 </div>
